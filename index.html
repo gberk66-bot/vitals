@@ -298,29 +298,57 @@
             window.myChart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: logs.map(l => l.d),
+                    labels: logs.map(l => {
+                        // Clean up the date: Only show Month/Day (e.g. 03/16)
+                        const dateObj = new Date(l.d);
+                        return isNaN(dateObj) ? l.d : (dateObj.getMonth() + 1) + '/' + dateObj.getDate();
+                    }),
                     datasets: [{
                         data: logs.map(l => l.w),
                         borderColor: '#fcee0a',
                         borderWidth: 3,
-                        tension: 0.3,
                         pointBackgroundColor: '#00f0ff',
-                        fill: false
+                        pointBorderColor: '#050505',
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        tension: 0.3,
+                        fill: true,
+                        // Adds a subtle glow effect under the line
+                        backgroundColor: 'rgba(252, 238, 10, 0.05)'
                     }]
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: false, // Prevents the vertical growth loop
-                    plugins: { legend: { display: false } },
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#050505',
+                            titleFont: { family: 'Courier New' },
+                            bodyFont: { family: 'Courier New' },
+                            borderColor: '#00f0ff',
+                            borderWidth: 1,
+                            displayColors: false
+                        }
+                    },
                     scales: {
                         y: {
-                            min: 225,  // Your Goal
-                            max: 280,  // Your Start
-                            ticks: { color: '#fcee0a', stepSize: 5 },
-                            grid: { color: '#333' }
+                            min: 225,
+                            max: 280,
+                            ticks: {
+                                color: '#fcee0a',
+                                font: { family: 'Courier New', size: 10 },
+                                stepSize: 5,
+                                callback: function (value) { return value + ' LBS'; }
+                            },
+                            grid: { color: '#222', borderDash: [5, 5] }
                         },
                         x: {
-                            ticks: { color: '#fcee0a' },
+                            ticks: {
+                                color: '#fcee0a',
+                                font: { family: 'Courier New', size: 10 },
+                                maxRotation: 0 // Keeps dates horizontal and clean
+                            },
                             grid: { display: false }
                         }
                     }
