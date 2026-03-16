@@ -93,8 +93,9 @@
 
         #chart-container {
             position: relative;
-            height: 250px; /* Set a fixed height for the HUD */
+            height: 300px; /* Lock the height */
             width: 100%;
+            overflow: hidden;
         }
 
         .stat-label {
@@ -303,16 +304,25 @@
                         borderColor: '#fcee0a',
                         borderWidth: 3,
                         tension: 0.3,
-                        pointBackgroundColor: '#00f0ff'
+                        pointBackgroundColor: '#00f0ff',
+                        fill: false
                     }]
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: false, // THIS STOPS THE SQUASHING
+                    maintainAspectRatio: false, // Prevents the vertical growth loop
                     plugins: { legend: { display: false } },
                     scales: {
-                        y: { ticks: { color: '#fcee0a' }, grid: { color: '#222' } },
-                        x: { ticks: { color: '#fcee0a' }, grid: { display: false } }
+                        y: {
+                            min: 225,  // Your Goal
+                            max: 280,  // Your Start
+                            ticks: { color: '#fcee0a', stepSize: 5 },
+                            grid: { color: '#333' }
+                        },
+                        x: {
+                            ticks: { color: '#fcee0a' },
+                            grid: { display: false }
+                        }
                     }
                 }
             });
