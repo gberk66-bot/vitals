@@ -219,26 +219,35 @@
             statusElement.innerText = "> INITIATING_CLOUD_PULL...";
 
             try {
-                // Direct fetch works on GitHub Pages without a proxy
-                const response = await fetch(`${READ_LINK}&t=${Date.now()}`);
-                if (!response.ok) throw new Error('OFFLINE');
+                const response = await fetch(`${READ_LINK}&cachebust=${Date.now()}`);
+
+                if (!response.ok) {
+                    statusElement.innerText = `> ERR: GOOGLE_RETURNED_${response.status}`;
+                    return;
+                }
 
                 const text = await response.text();
-                const rows = text.split('\n').slice(1);
 
+                // Check if Google sent back an HTML login page instead of data
+                if (text.includes("<html")) {
+                    statusElement.innerText = "> ERR: LINK_EXPIRED_REPUBLISH_SHEET";
+                    return;
+                }
+
+                const rows = text.split('\n').slice(1);
                 const logs = rows.map(r => {
                     const c = r.split(',');
                     return { d: c[0], w: parseFloat(c[1]), c: parseInt(c[2]) };
-                }).filter(l => !isNaN(l.w) && l.w > 0);
+                }).filter(l => !isNaN(l.w));
 
                 if (logs.length === 0) {
-                    statusElement.innerText = "> ERR: DATABASE_EMPTY";
+                    statusElement.innerText = "> ERR: SHEET_IS_EMPTY_OR_FORMAT_WRONG";
                 } else {
                     updateUI(logs);
-                    statusElement.innerText = "> SYNC_SUCCESSFUL // DATA_STREAM_STABLE";
+                    statusElement.innerText = "> SYNC_SUCCESSFUL // DATA_STREAM_LIVE";
                 }
             } catch (e) {
-                statusElement.innerText = "> ERR: CLOUD_HANDSHAKE_FAILED";
+                statusElement.innerText = "> ERR: CROSS_ORIGIN_BLOCK_DETECTED";
                 console.error(e);
             }
         }
