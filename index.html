@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>PROJECT_225 // TOTAL_SYNC_V8</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PROJECT_225 // TACTICAL_STRAT_OS</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -17,23 +18,25 @@
             background-color: var(--cp-black);
             color: var(--cp-yellow);
             font-family: 'Courier New', monospace;
-            padding: 20px;
+            padding: 15px;
             text-transform: uppercase;
             background-image: linear-gradient(rgba(0,0,0,0.3) 50%, rgba(0,0,0,0) 50%), linear-gradient(90deg, rgba(255,0,0,0.02), rgba(0,255,0,0.01), rgba(0,0,255,0.02));
             background-size: 100% 2px, 3px 100%;
+            margin: 0;
         }
 
         .container {
-            max-width: 1000px;
+            max-width: 900px;
             margin: 0 auto;
             border: 2px solid var(--cp-yellow);
-            padding: 25px;
+            padding: 20px;
             box-shadow: 8px 8px 0px var(--cp-red);
             background: rgba(5,5,5,0.95);
         }
 
+        /* MISSION HUD */
         .progress-section {
-            margin-bottom: 30px;
+            margin-bottom: 25px;
             border: 2px solid var(--cp-blue);
             padding: 20px;
             background: rgba(0, 240, 255, 0.05);
@@ -41,7 +44,7 @@
         }
 
         .target-number {
-            font-size: 4rem;
+            font-size: clamp(2.5rem, 8vw, 4rem);
             font-weight: 900;
             color: var(--cp-yellow);
             text-shadow: 0 0 20px var(--cp-red);
@@ -49,11 +52,11 @@
         }
 
         .bar-container {
-            height: 45px;
+            height: 35px;
             background: #000;
             border: 2px solid var(--cp-yellow);
             position: relative;
-            margin: 20px 0;
+            margin: 15px 0;
             overflow: hidden;
         }
 
@@ -62,11 +65,21 @@
             background: linear-gradient(90deg, var(--cp-red), var(--cp-yellow));
             width: 0%;
             transition: 2s;
+            box-shadow: 0 0 15px var(--cp-yellow);
         }
 
+        .checkpoints {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.6rem;
+            font-weight: bold;
+            color: var(--cp-blue);
+        }
+
+        /* GRID SYSTEM */
         .grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 15px;
             margin-bottom: 20px;
         }
@@ -77,10 +90,26 @@
             background: rgba(252,238,10,0.03);
         }
 
+        .stat-label {
+            font-size: 0.6rem;
+            color: #888;
+            border-bottom: 1px solid #333;
+            margin-bottom: 8px;
+            padding-bottom: 3px;
+        }
+
         .stat-val {
-            font-size: 2rem;
+            font-size: 1.8rem;
             color: var(--cp-blue);
             font-weight: bold;
+        }
+
+        /* INPUTS */
+        label {
+            font-size: 0.6rem;
+            color: var(--cp-blue);
+            display: block;
+            margin-bottom: 5px;
         }
 
         input, button {
@@ -93,6 +122,7 @@
             margin-bottom: 10px;
             font-family: inherit;
             font-weight: bold;
+            font-size: 1rem;
         }
 
         button {
@@ -100,6 +130,7 @@
             color: var(--cp-black);
             cursor: pointer;
             border: none;
+            transition: 0.2s;
         }
 
             button:hover {
@@ -113,46 +144,68 @@
             margin-bottom: 15px;
             border-left: 3px solid var(--cp-green);
             padding-left: 10px;
+            min-height: 1em;
+        }
+
+        canvas {
+            background: rgba(0,0,0,0.3);
+            padding: 5px;
         }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <div id="status">> SYSTEM_STABLE // CLOUD_SYNC_ENABLED</div>
+        <div id="status">> SYSTEM_INITIALIZING...</div>
 
         <div class="progress-section">
-            <div style="color: var(--cp-red); letter-spacing: 5px; font-size: 0.8rem;">MISSION_GOAL: 225 LBS</div>
+            <div style="color: var(--cp-red); letter-spacing: 5px; font-size: 0.7rem;">MISSION_GOAL_STATUS</div>
             <div class="target-number">225</div>
             <div class="bar-container"><div id="progressBar"></div></div>
-            <div id="percentDone" style="font-weight: bold; color: var(--cp-blue);">0% DELETED</div>
+            <div class="checkpoints">
+                <span id="startDisplay">---</span><span>-10</span><span>-20</span><span>-30</span><span>-40</span><span>GOAL</span>
+            </div>
+            <div id="percentDone" style="margin-top: 10px; font-weight: bold; color: var(--cp-blue); font-size: 0.8rem;">0% PURGED</div>
         </div>
 
         <div class="grid">
-            <div class="card" style="border-color: var(--cp-green);"><div>EXPENDITURE</div><div id="tdeeDisplay" class="stat-val">---</div></div>
-            <div class="card" style="border-color: var(--cp-red);"><div>FUEL_GOAL</div><div id="calGoal" class="stat-val">2200</div></div>
-            <div class="card" style="border-color: var(--cp-blue);"><div>TREND_WEIGHT</div><div id="trendWeight" class="stat-val">---</div></div>
+            <div class="card" style="border-color: var(--cp-green);">
+                <div class="stat-label">TRUE_EXPENDITURE (TDEE)</div>
+                <div id="tdeeDisplay" class="stat-val">---</div>
+            </div>
+            <div class="card" style="border-color: var(--cp-red);">
+                <div class="stat-label">ADAPTIVE_FUEL_GOAL</div>
+                <div id="calGoal" class="stat-val">---</div>
+            </div>
+            <div class="card" style="border-color: var(--cp-blue);">
+                <div class="stat-label">TREND_WEIGHT</div>
+                <div id="trendWeight" class="stat-val">---</div>
+            </div>
         </div>
 
-        <div class="grid" style="grid-template-columns: 1fr 2fr;">
+        <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
             <div class="card">
-                <h3>> SYNC_DATA</h3>
+                <h3>> SYNC_LOG</h3>
+                <label>DATE</label>
                 <input type="date" id="dInput">
-                <input type="number" id="wInput" step="0.1" placeholder="MASS (LBS)">
-                <input type="number" id="cInput" placeholder="KCAL">
-                <button onclick="sendData()">UPLOAD_TO_CLOUD</button>
+                <label>WEIGHT (LBS)</label>
+                <input type="number" id="wInput" step="0.1" placeholder="000.0">
+                <label>CALORIES</label>
+                <input type="number" id="cInput" placeholder="0000">
+                <button onclick="sendData()">UPLOAD_TO_MAINFRAME</button>
                 <button onclick="pullData()" style="background:transparent; color:var(--cp-blue); border-color:var(--cp-blue); margin-top:5px;">MANUAL_REFRESH</button>
             </div>
             <div class="card">
                 <h3>> TRAJECTORY_HUD</h3>
-                <canvas id="chart" height="150"></canvas>
+                <canvas id="chart" height="200"></canvas>
             </div>
         </div>
     </div>
 
     <script>
+        // --- CORE CONFIG ---
         const TARGET = 225;
-        const READ_LINK = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTQgFT19Nm-hcjssSvBNaeRp7FaPjGFE4BdMutHO_kxYiorB0IKnXyV8rG7SojQjGPXIYHZ3Mu_HBhl/pub?gid=0&single=true&output=csvhttps://docs.google.com/spreadsheets/d/e/2PACX-1vTQgFT19Nm-hcjssSvBNaeRp7FaPjGFE4BdMutHO_kxYiorB0IKnXyV8rG7SojQjGPXIYHZ3Mu_HBhl/pub?gid=29801472&single=true&output=csv';
+        const READ_LINK = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTQgFT19Nm-hcjssSvBNaeRp7FaPjGFE4BdMutHO_kxYiorB0IKnXyV8rG7SojQjGPXIYHZ3Mu_HBhl/pub?gid=0&single=true&output=csv';
         const FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSelMhZLX7jmpppjvKBBABrENv0FWdZt4cPTVqoo2tO8I57K1w/formResponse';
 
         const ID_DATE = 'entry.1257512782';
@@ -166,30 +219,27 @@
             statusElement.innerText = "> INITIATING_CLOUD_PULL...";
 
             try {
-                // We'll try the direct pull first (works on GitHub/Drive)
-                const response = await fetch(READ_LINK + '&t=' + Date.now());
-
+                // Direct fetch works on GitHub Pages without a proxy
+                const response = await fetch(`${READ_LINK}&t=${Date.now()}`);
                 if (!response.ok) throw new Error('OFFLINE');
 
                 const text = await response.text();
                 const rows = text.split('\n').slice(1);
 
-                logs = rows.map(r => {
+                const logs = rows.map(r => {
                     const c = r.split(',');
-                    // Mapping: A=Date, B=Weight, C=Cals
                     return { d: c[0], w: parseFloat(c[1]), c: parseInt(c[2]) };
-                }).filter(l => !isNaN(l.w));
+                }).filter(l => !isNaN(l.w) && l.w > 0);
 
                 if (logs.length === 0) {
-                    statusElement.innerText = "> ERR: DATABASE_IS_EMPTY";
+                    statusElement.innerText = "> ERR: DATABASE_EMPTY";
                 } else {
-                    updateUI();
+                    updateUI(logs);
                     statusElement.innerText = "> SYNC_SUCCESSFUL // DATA_STREAM_STABLE";
                 }
             } catch (e) {
-                // If the direct pull fails, it's likely a browser security block
-                statusElement.innerText = "> ERR: SECURITY_BLOCK (USE_GITHUB_OR_DRIVE)";
-                console.error('Connection Error:', e);
+                statusElement.innerText = "> ERR: CLOUD_HANDSHAKE_FAILED";
+                console.error(e);
             }
         }
 
@@ -198,46 +248,70 @@
             const w = document.getElementById('wInput').value;
             const c = document.getElementById('cInput').value;
 
-            if (!w || !c || !d) { alert("DATA_REQUIRED"); return; }
+            if (!w || !c || !d) {
+                alert("UPLOAD_ERROR: DATA_REQUIRED");
+                return;
+            }
 
             const submitUrl = `${FORM_URL}?${ID_DATE}=${d}&${ID_WEIGHT}=${w}&${ID_KCAL}=${c}&submit=Submit`;
 
-            // This opens a tiny pop-up and closes it immediately to confirm submission
-            const syncWin = window.open(submitUrl, 'sync', 'width=100,height=100');
-            setTimeout(() => {
-                if (syncWin) syncWin.close();
-                document.getElementById('status').innerText = "> UPLOAD_COMPLETE. REFRESH IN 15S.";
-            }, 1500);
+            // Background submission
+            const img = new Image();
+            img.src = submitUrl;
+
+            document.getElementById('status').innerText = "> DATA_UPLOADED. WAIT 20S FOR CLOUD REPLICATION.";
+            alert("BIOMETRICS SENT. TERMINAL SYNCING...");
         }
 
         function updateUI(logs) {
-            if (!logs.length) return;
             const last = logs[logs.length - 1];
             const start = logs[0].w;
-            document.getElementById('trendWeight').innerText = last.w;
+
+            document.getElementById('trendWeight').innerText = last.w.toFixed(1);
+            document.getElementById('startDisplay').innerText = start.toFixed(1);
+
             const pct = Math.min(Math.max(((start - last.w) / (start - TARGET)) * 100, 0), 100).toFixed(1);
             document.getElementById('progressBar').style.width = pct + "%";
             document.getElementById('percentDone').innerText = pct + "% PURGED";
 
+            // Chart logic
             const ctx = document.getElementById('chart').getContext('2d');
             if (window.myChart) window.myChart.destroy();
             window.myChart = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: logs.map(l => l.d),
-                    datasets: [{ data: logs.map(l => l.w), borderColor: '#fcee0a', tension: 0.3 }]
+                    datasets: [{
+                        data: logs.map(l => l.w),
+                        borderColor: '#fcee0a',
+                        borderWidth: 3,
+                        tension: 0.3,
+                        pointBackgroundColor: '#00f0ff',
+                        pointRadius: 2
+                    }]
                 },
-                options: { plugins: { legend: { display: false } }, scales: { y: { ticks: { color: '#fcee0a' } }, x: { ticks: { color: '#fcee0a' } } } }
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { ticks: { color: '#fcee0a', font: { family: 'Courier New' } }, grid: { color: '#222' } },
+                        x: { ticks: { color: '#fcee0a', font: { family: 'Courier New' } }, grid: { display: false } }
+                    }
+                }
             });
 
+            // MacroFactor TDEE Logic (7-day min)
             if (logs.length >= 7) {
                 const days = Math.max((new Date(last.d) - new Date(logs[0].d)) / 86400000, 1);
-                const tdee = Math.round((logs.reduce((s, e) => s + e.c, 0) / logs.length) + ((logs[0].w - last.w) * 3500 / days));
+                const totalCals = logs.reduce((s, e) => s + e.c, 0);
+                const tdee = Math.round((totalCals / logs.length) + ((logs[0].w - last.w) * 3500 / days));
                 document.getElementById('tdeeDisplay').innerText = tdee;
                 document.getElementById('calGoal').innerText = tdee - 1000;
             }
         }
 
+        // Auto-pull on launch
         pullData();
     </script>
 </body>
