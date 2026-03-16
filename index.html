@@ -88,6 +88,13 @@
             border: 1px solid var(--cp-yellow);
             padding: 15px;
             background: rgba(252,238,10,0.03);
+            overflow: hidden; /* Stops the card from stretching */
+        }
+
+        #chart-container {
+            position: relative;
+            height: 250px; /* Set a fixed height for the HUD */
+            width: 100%;
         }
 
         .stat-label {
@@ -197,9 +204,10 @@
             </div>
             <div class="card">
                 <h3>> TRAJECTORY_HUD</h3>
-                <canvas id="chart" height="200"></canvas>
+                <div id="chart-container">
+                    <canvas id="chart"></canvas>
+                </div>
             </div>
-        </div>
     </div>
 
     <script>
@@ -295,17 +303,16 @@
                         borderColor: '#fcee0a',
                         borderWidth: 3,
                         tension: 0.3,
-                        pointBackgroundColor: '#00f0ff',
-                        pointRadius: 2
+                        pointBackgroundColor: '#00f0ff'
                     }]
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: false,
+                    maintainAspectRatio: false, // THIS STOPS THE SQUASHING
                     plugins: { legend: { display: false } },
                     scales: {
-                        y: { ticks: { color: '#fcee0a', font: { family: 'Courier New' } }, grid: { color: '#222' } },
-                        x: { ticks: { color: '#fcee0a', font: { family: 'Courier New' } }, grid: { display: false } }
+                        y: { ticks: { color: '#fcee0a' }, grid: { color: '#222' } },
+                        x: { ticks: { color: '#fcee0a' }, grid: { display: false } }
                     }
                 }
             });
